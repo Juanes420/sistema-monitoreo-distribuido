@@ -29,3 +29,5 @@ autenticarse y consultar el estado actual e histórico de los nodos.
 ├── nodes/       Código de los nodos (Python)
 └── clients/     Código de los clientes de administración (Python)
 ```
+
+**Fase 1 — Diseño y arquitectura**: ver [`docs/fase1.md`](docs/fase1.md)
