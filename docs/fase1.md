@@ -4,7 +4,7 @@
 
 ### Server Resource Monitoring Protocol
 
-**Curso:** Internet: Arquitectura y Protocolos, Telemática — 2026-2
+**Curso:** Internet: Arquitectura y Protocolos
 **Integrantes:** Juan Esteban Peña, Luis Miguel Mira
 **Fecha de entrega:** 9 de septiembre de 2026
 
@@ -36,6 +36,9 @@ El servidor central será el encargado de mantener la información más reciente
 ## 2. Arquitectura propuesta
 
 El sistema estará compuesto por dos nodos, un servidor central y uno o varios clientes de administración.
+
+<img width="1285" height="584" alt="image" src="https://github.com/user-attachments/assets/ebaed4b0-5eb5-4dc0-81fe-4d88cb5de100" />
+
 
 
 
@@ -78,87 +81,87 @@ El protocolo **SRMP** tendrá diferentes tipos de mensajes dependiendo de la ent
 
 | Mensaje    | Código | Descripción                                                 |
 | ---------- | ------ | ----------------------------------------------------------- |
-| `REG_NODO` | `0x01` | Permite registrar un nodo ante el servidor.                 |
-| `ESTADO`   | `0x02` | Envía periódicamente las métricas del nodo.                 |
-| `EVENTO`   | `0x03` | Informa sobre un evento importante o una situación crítica. |
+| REG_NODO | 0x01 | Permite registrar un nodo ante el servidor.                 |
+| ESTADO   | 0x02 | Envía periódicamente las métricas del nodo.                 |
+| EVENTO   | 0x03 | Informa sobre un evento importante o una situación crítica. |
 
 ### Mensajes enviados por los clientes
 
 | Mensaje           | Código | Descripción                                      |
 | ----------------- | ------ | ------------------------------------------------ |
-| `LOGIN`           | `0x10` | Solicita la autenticación del cliente.           |
-| `CONSULTA_ACTUAL` | `0x11` | Solicita el estado actual de uno o varios nodos. |
-| `CONSULTA_HIST`   | `0x12` | Solicita información histórica de un nodo.       |
+| LOGIN           | 0x10 | Solicita la autenticación del cliente.           |
+| CONSULTA_ACTUAL | 0x11 | Solicita el estado actual de uno o varios nodos. |
+| CONSULTA_HIST   | 0x12 | Solicita información histórica de un nodo.       |
 
 ### Mensajes enviados por el servidor
 
 | Mensaje       | Código | Descripción                                                                   |
 | ------------- | ------ | ----------------------------------------------------------------------------- |
-| `ACK`         | `0x80` | Confirma que un mensaje que requiere confirmación fue recibido correctamente. |
-| `RESP_ESTADO` | `0x81` | Contiene la respuesta a una consulta sobre el estado actual.                  |
-| `RESP_HIST`   | `0x82` | Contiene información histórica de un nodo.                                    |
-| `ERROR`       | `0xFF` | Informa que ocurrió algún problema al procesar el mensaje.                    |
+| ACK         | 0x80 | Confirma que un mensaje que requiere confirmación fue recibido correctamente. |
+| RESP_ESTADO | 0x81 | Contiene la respuesta a una consulta sobre el estado actual.                  |
+| RESP_HIST   | 0x82 | Contiene información histórica de un nodo.                                    |
+| ERROR       | 0xFF | Informa que ocurrió algún problema al procesar el mensaje.                    |
 
-El mensaje `ACK` será obligatorio para los registros y eventos críticos. Las mediciones periódicas `ESTADO` no necesitan una confirmación obligatoria porque pueden tolerar la pérdida ocasional de una medición.
+El mensaje ACK será obligatorio para los registros y eventos críticos. Las mediciones periódicas ESTADO no necesitan una confirmación obligatoria porque pueden tolerar la pérdida ocasional de una medición.
 
 ---
 
 ## 5. Sintaxis preliminar de los mensajes
 
-Inicialmente se propone utilizar mensajes de texto separados por el carácter `|`. Esto facilita la lectura y las pruebas durante el desarrollo.
+Inicialmente se propone utilizar mensajes de texto separados por el carácter |. Esto facilita la lectura y las pruebas durante el desarrollo.
 
 La estructura general será:
 
-```text
+text
 TIPO|ID_ORIGEN|ID_MENSAJE|TIMESTAMP|LONGITUD_PAYLOAD|PAYLOAD
-```
+
 
 Los campos tendrán la siguiente función:
 
-* `TIPO`: indica qué operación se está realizando.
-* `ID_ORIGEN`: identifica al nodo o cliente que envía el mensaje.
-* `ID_MENSAJE`: identificador único del mensaje.
-* `TIMESTAMP`: fecha y hora en que se generó el mensaje.
-* `LONGITUD_PAYLOAD`: indica el tamaño del contenido adicional.
-* `PAYLOAD`: contiene los datos específicos de cada mensaje.
+* TIPO: indica qué operación se está realizando.
+* ID_ORIGEN: identifica al nodo o cliente que envía el mensaje.
+* ID_MENSAJE: identificador único del mensaje.
+* TIMESTAMP: fecha y hora en que se generó el mensaje.
+* LONGITUD_PAYLOAD: indica el tamaño del contenido adicional.
+* PAYLOAD: contiene los datos específicos de cada mensaje.
 
 ### Ejemplos
 
 **Registro de un nodo:**
 
-```text
+text
 REG_NODO|nodo01|1001|2026-09-09T10:00:00|0|
-```
+
 
 **Envío de información periódica:**
 
-```text
+text
 ESTADO|nodo01|1002|2026-09-09T10:00:05|18|RAM=62;TEMP=58.3
-```
+
 
 **Evento crítico:**
 
-```text
+text
 EVENTO|nodo01|1003|2026-09-09T10:00:07|24|TIPO=TEMP_ALTA;VAL=71.2
-```
+
 
 **Confirmación del servidor:**
 
-```text
+text
 ACK|nodo01|1003|2026-09-09T10:00:07|2|OK
-```
+
 
 **Consulta de histórico:**
 
-```text
+text
 CONSULTA_HIST|cliente01|2001|2026-09-09T10:05:00|10|nodo=nodo01
-```
+
 
 **Mensaje de error:**
 
-```text
+text
 ERROR|nodo99|1004|2026-09-09T10:00:05|20|NODO_NO_REGISTRADO
-```
+
 
 Esta sintaxis es preliminar. Durante la Fase 2 se definirán con mayor precisión las reglas de validación, los tamaños de los campos y el manejo de caracteres especiales.
 
@@ -166,21 +169,21 @@ Esta sintaxis es preliminar. Durante la Fase 2 se definirán con mayor precisió
 
 ## 6. Reglas básicas de comunicación
 
-1. Un nodo debe registrarse mediante `REG_NODO` antes de enviar mensajes `ESTADO` o `EVENTO`.
+1. Un nodo debe registrarse mediante REG_NODO antes de enviar mensajes ESTADO o EVENTO.
 
-2. Si el servidor recibe información de un nodo que no está registrado, responderá con un mensaje `ERROR` indicando `NODO_NO_REGISTRADO`.
+2. Si el servidor recibe información de un nodo que no está registrado, responderá con un mensaje ERROR indicando NODO_NO_REGISTRADO.
 
-3. Todo mensaje `EVENTO` debe ser confirmado por el servidor mediante un `ACK`.
+3. Todo mensaje EVENTO debe ser confirmado por el servidor mediante un ACK.
 
-4. Los mensajes `ESTADO` no necesitan confirmación obligatoria, ya que corresponden a información que se actualiza periódicamente.
+4. Los mensajes ESTADO no necesitan confirmación obligatoria, ya que corresponden a información que se actualiza periódicamente.
 
-5. Un cliente debe enviar primero un mensaje `LOGIN`. Solo después de una autenticación correcta podrá realizar consultas.
+5. Un cliente debe enviar primero un mensaje LOGIN. Solo después de una autenticación correcta podrá realizar consultas.
 
-6. Si las credenciales del cliente son incorrectas, el servidor enviará un mensaje `ERROR`.
+6. Si las credenciales del cliente son incorrectas, el servidor enviará un mensaje ERROR.
 
-7. Los mensajes con un formato incorrecto serán rechazados mediante un mensaje `ERROR`. Este error no debe provocar que el servidor termine su ejecución ni afectar las conexiones de los demás usuarios.
+7. Los mensajes con un formato incorrecto serán rechazados mediante un mensaje ERROR. Este error no debe provocar que el servidor termine su ejecución ni afectar las conexiones de los demás usuarios.
 
-8. Cada mensaje tendrá un `ID_MENSAJE`. Esto permitirá identificar mensajes repetidos y facilitará el control de los mensajes enviados mediante UDP.
+8. Cada mensaje tendrá un ID_MENSAJE. Esto permitirá identificar mensajes repetidos y facilitará el control de los mensajes enviados mediante UDP.
 
 9. El servidor deberá resolver los nombres de dominio utilizados por el sistema y no tendrá direcciones IP escritas directamente en el código.
 
@@ -194,16 +197,20 @@ Esta sintaxis es preliminar. Durante la Fase 2 se definirán con mayor precisió
 
 Desde el punto de vista del servidor, un nodo podrá encontrarse en los siguientes estados:
 
+<img width="1313" height="704" alt="image" src="https://github.com/user-attachments/assets/50915fe5-0945-4597-bee3-e7269e2cabd6" />
 
 
-Un nodo comienza como desconocido. Después de registrarse correctamente pasa a `Registrado`. Cuando el servidor recibe su primera medición, pasa a `Activo`.
 
-Si durante un tiempo determinado no se reciben mediciones del nodo, el servidor lo marcará como `Inactivo`. Si posteriormente vuelve a recibir información, el nodo vuelve a estar `Activo`.
+
+Un nodo comienza como desconocido. Después de registrarse correctamente pasa a Registrado. Cuando el servidor recibe su primera medición, pasa a Activo.
+
+Si durante un tiempo determinado no se reciben mediciones del nodo, el servidor lo marcará como Inactivo. Si posteriormente vuelve a recibir información, el nodo vuelve a estar Activo.
 
 ---
 
 ### 7.2 Sesión de un cliente
 
+<img width="1233" height="659" alt="image" src="https://github.com/user-attachments/assets/1ba4684a-728d-4672-aea4-bfbfdfcb4b17" />
 
 
 El cliente primero establece la conexión con el servidor y debe autenticarse correctamente. Una vez autenticado puede realizar las consultas permitidas según su perfil.
@@ -216,19 +223,19 @@ La elección del protocolo de transporte dependerá del tipo de información que
 
 | Tipo de mensaje | Frecuencia                          | Criticidad | Tolerancia a pérdida     | Protocolo |
 | --------------- | ----------------------------------- | ---------- | ------------------------ | --------- |
-| `REG_NODO`      | Una vez al registrarse              | Alta       | No tolera pérdida        | **TCP**   |
-| `ESTADO`        | Cada pocos segundos                 | Baja       | Tolera pérdida ocasional | **UDP**   |
-| `EVENTO`        | Cuando ocurre una situación crítica | Alta       | No tolera pérdida        | **TCP**   |
-| `LOGIN`         | Al iniciar sesión                   | Alta       | No tolera pérdida        | **TCP**   |
-| `CONSULTA_*`    | Bajo demanda                        | Alta       | No tolera pérdida        | **TCP**   |
+| REG_NODO      | Una vez al registrarse              | Alta       | No tolera pérdida        | **TCP**   |
+| ESTADO        | Cada pocos segundos                 | Baja       | Tolera pérdida ocasional | **UDP**   |
+| EVENTO        | Cuando ocurre una situación crítica | Alta       | No tolera pérdida        | **TCP**   |
+| LOGIN         | Al iniciar sesión                   | Alta       | No tolera pérdida        | **TCP**   |
+| CONSULTA_*    | Bajo demanda                        | Alta       | No tolera pérdida        | **TCP**   |
 
 ### Justificación
 
 Se propone utilizar una combinación de TCP y UDP.
 
-Las mediciones periódicas (`ESTADO`) utilizarán **UDP**, porque se envían con frecuencia, son pequeñas y perder una medición no representa un problema grave. En pocos segundos el nodo enviará una nueva medición con información más actualizada.
+Las mediciones periódicas (ESTADO) utilizarán **UDP**, porque se envían con frecuencia, son pequeñas y perder una medición no representa un problema grave. En pocos segundos el nodo enviará una nueva medición con información más actualizada.
 
-En cambio, el registro de un nodo (`REG_NODO`) y los eventos críticos (`EVENTO`) utilizarán **TCP**, porque estos mensajes son importantes para el funcionamiento del sistema y no sería conveniente perderlos.
+En cambio, el registro de un nodo (REG_NODO) y los eventos críticos (EVENTO) utilizarán **TCP**, porque estos mensajes son importantes para el funcionamiento del sistema y no sería conveniente perderlos.
 
 Las comunicaciones de los clientes también utilizarán **TCP**, ya que las solicitudes de autenticación y las consultas necesitan recibir una respuesta correcta y en el orden en que fueron realizadas.
 
@@ -240,7 +247,7 @@ De esta manera, no se utiliza un único protocolo de transporte para todo el sis
 
 El sistema contará con un mecanismo de autenticación para controlar el acceso de los clientes.
 
-Antes de realizar una consulta, el cliente deberá enviar un mensaje `LOGIN` con sus credenciales. El servidor verificará estas credenciales mediante un módulo de autenticación separado de la lógica principal del servidor.
+Antes de realizar una consulta, el cliente deberá enviar un mensaje LOGIN con sus credenciales. El servidor verificará estas credenciales mediante un módulo de autenticación separado de la lógica principal del servidor.
 
 Inicialmente se manejarán dos perfiles:
 
