@@ -2,6 +2,11 @@
 
 Proyecto de Internet: Arquitectura y Protocolos / Telemática 2026-2.
 
+
+**Integrantes:**
+-Juan Esteban Peña Rojas 
+-Luis Miguel Mira Mejia 
+
 ## Estructura
 
 - `server/`: servidor central en C con Berkeley Sockets.
