@@ -1,0 +1,2 @@
+admin:admin123:ADMIN
+consulta:consulta123:CONSULTA

@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Ejecutables generados por compilación
+server/server
+
+# Logs generados durante la ejecución
+server/servidor.log
+
+# Entorno virtual de Python
+venv/
+.venv/
