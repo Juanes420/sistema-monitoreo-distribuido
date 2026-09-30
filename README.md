@@ -23,11 +23,9 @@ autenticarse y consultar el estado actual e histórico de los nodos.
  
 ```
 .
-├── docs/        Documentación general y entregas por fase
-├── protocol/    Especificación del protocolo SRMP
+├── clients/     Codigo de los clientes (python)
 ├── server/      Código del servidor central (C)
 ├── nodes/       Código de los nodos (Python)
-└── clients/     Código de los clientes de administración (Python)
 ```
 
 **Fase 1 — Diseño y arquitectura**: ver [`docs/fase1.md`](docs/fase1.md)
