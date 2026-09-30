@@ -81,6 +81,7 @@ class Cliente:
         self.port = port
         self.sock = None
         self.id = "cliente01"
+        self.role = None
 
     def conectar(self):
         ip = resolve_host(self.host)
@@ -96,8 +97,14 @@ class Cliente:
     def enviar(self, msg):
         try:
             self.sock.sendall((msg + "\n").encode())
-            data = self.sock.recv(4096).decode().strip()
-            return data
+            chunks = []
+            while True:
+                data = self.sock.recv(4096)
+                if not data:
+                    return None
+                chunks.append(data)
+                if b"\n" in data:
+                    return b"".join(chunks).split(b"\n", 1)[0].decode().strip()
         except (socket.timeout, OSError) as e:
             print(f"[ERROR] Fallo de comunicacion con el servidor: {e}")
             return None
@@ -112,6 +119,7 @@ class Cliente:
             return False
         parsed = parse_resp(resp)
         if parsed and parsed["tipo"] == "ACK":
+            self.role = parsed["payload"]
             print(f"[OK] Autenticado como perfil: {parsed['payload']}")
             return True
         else:
@@ -157,6 +165,8 @@ def main():
     parser.add_argument("--host", required=True, help="Nombre de dominio o host del servidor")
     parser.add_argument("--port", type=int, required=True, help="Puerto del servidor")
     args = parser.parse_args()
+    if not 1 <= args.port <= 65535:
+        parser.error("--port debe estar entre 1 y 65535")
 
     cliente = Cliente(args.host, args.port)
     if not cliente.conectar():
@@ -173,6 +183,9 @@ def main():
             nodo = input("ID del nodo: ").strip()
             cliente.consulta_actual(nodo)
         elif opcion == "3":
+            if cliente.role != "ADMIN":
+                print("[ERROR] Solo el perfil ADMIN puede consultar el historico.")
+                continue
             nodo = input("ID del nodo: ").strip()
             cliente.consulta_hist(nodo)
         elif opcion == "4":

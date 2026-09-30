@@ -97,8 +97,14 @@ class Nodo:
 
     def _leer_tcp(self):
         try:
-            data = self.tcp_sock.recv(4096).decode().strip()
-            return data
+            chunks = []
+            while True:
+                data = self.tcp_sock.recv(4096)
+                if not data:
+                    return None
+                chunks.append(data)
+                if b"\n" in data:
+                    return b"".join(chunks).split(b"\n", 1)[0].decode().strip()
         except (socket.timeout, OSError) as e:
             print(f"[ERROR] Fallo al leer respuesta TCP: {e}")
             return None
@@ -154,6 +160,8 @@ def main():
     parser.add_argument("--port", type=int, required=True, help="Puerto del servidor")
     parser.add_argument("--id", required=True, help="Identificador del nodo (ej. nodo01)")
     args = parser.parse_args()
+    if not 1 <= args.port <= 65535:
+        parser.error("--port debe estar entre 1 y 65535")
 
     nodo = Nodo(args.host, args.port, args.id)
 

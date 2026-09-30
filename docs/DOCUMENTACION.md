@@ -342,9 +342,9 @@ Usuarios de prueba:
 
 La autenticación se mantiene por conexión TCP: antes de ejecutar `CONSULTA_ACTUAL` o `CONSULTA_HIST`, el servidor comprueba que la conexión haya sido autenticada.
 
-### Nota sobre los perfiles
+### Perfiles y permisos
 
-Los perfiles `ADMIN` y `CONSULTA` se identifican durante el login, pero la versión actual del código no implementa permisos diferentes entre ambos perfiles. Los dos perfiles pueden realizar las consultas disponibles. Esto no afecta el mecanismo básico de autenticación, pero constituye una limitación funcional del control de perfiles.
+El perfil `ADMIN` puede consultar el estado actual y el histórico. El perfil `CONSULTA` puede consultar el estado actual, pero el servidor rechaza `CONSULTA_HIST` con `ERROR|...|PERMISO_DENEGADO`. La comprobación se hace en el servidor, por lo que no depende de la interfaz del cliente.
 
 ### Nota sobre almacenamiento de usuarios
 
@@ -646,7 +646,7 @@ La combinación de TCP y UDP permite diferenciar entre telemetría periódica y 
 
 Las pruebas realizadas demostraron el registro de múltiples nodos, envío periódico de telemetría, generación de eventos, consultas actuales e históricas, concurrencia de clientes, detección de timeout, recuperación de nodos y generación de logs.
 
-Como limitaciones conocidas de esta versión, la temperatura de los nodos es simulada debido al entorno virtualizado utilizado para las pruebas y los perfiles `ADMIN` y `CONSULTA` se autentican pero actualmente no tienen permisos diferentes. Además, las credenciales se almacenan en el archivo local `users.txt`; el módulo de autenticación está separado de la lógica principal para facilitar una futura sustitución por un servicio externo.
+Como limitaciones conocidas de esta versión, la temperatura de los nodos es simulada debido al entorno virtualizado utilizado para las pruebas. Además, las credenciales se almacenan en el archivo local `users.txt`; el módulo de autenticación está separado de la lógica principal para facilitar una futura sustitución por un servicio externo.
 
 ---
 

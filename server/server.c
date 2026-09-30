@@ -111,12 +111,31 @@ static int parse_msg(const char *raw, SrmpMsg *m) {
     tok = strsep(&rest, "|"); if (!tok) return -1; strncpy(m->id_origen, tok, MAX_FIELD - 1);
     tok = strsep(&rest, "|"); if (!tok) return -1; strncpy(m->id_mensaje, tok, MAX_FIELD - 1);
     tok = strsep(&rest, "|"); if (!tok) return -1; strncpy(m->timestamp, tok, MAX_FIELD - 1);
-    tok = strsep(&rest, "|"); if (!tok) return -1; m->longitud = atoi(tok);
+    tok = strsep(&rest, "|"); if (!tok || *tok == '\0') return -1;
+    char *end;
+    long length = strtol(tok, &end, 10);
+    if (*end != '\0' || length < 0 || length >= MAX_PAYLOAD) return -1;
+    m->longitud = (int)length;
 
     if (rest) {
+        if (strlen(rest) >= MAX_PAYLOAD) return -1;
         strncpy(m->payload, rest, MAX_PAYLOAD - 1);
     } else {
         m->payload[0] = 0;
+    }
+    if (strlen(m->payload) != (size_t)m->longitud) return -1;
+    if (m->tipo[0] == '\0' || m->id_origen[0] == '\0' ||
+        m->id_mensaje[0] == '\0' || m->timestamp[0] == '\0') return -1;
+    return 0;
+}
+
+/* send() puede enviar solo una parte del buffer; esta función completa la respuesta. */
+static int send_all(int fd, const char *buf, size_t len) {
+    size_t sent = 0;
+    while (sent < len) {
+        ssize_t n = send(fd, buf + sent, len - sent, 0);
+        if (n <= 0) return -1;
+        sent += (size_t)n;
     }
     return 0;
 }
@@ -329,6 +348,8 @@ static void dispatch(const SrmpMsg *m, char *resp, size_t respsize, int *authent
     } else if (strcmp(m->tipo, MSG_CONSULTA_HIST) == 0) {
         if (!*authenticated) {
             build_msg(resp, respsize, MSG_ERROR, "NO_AUTENTICADO");
+        } else if (strcmp(role, "ADMIN") != 0) {
+            build_msg(resp, respsize, MSG_ERROR, "PERMISO_DENEGADO");
         } else {
             handle_consulta_hist(m, resp, respsize);
         }
@@ -385,7 +406,7 @@ static void *handle_tcp_client(void *arg) {
                 dispatch(&m, resp, sizeof(resp), &authenticated, role);
             }
 
-            if (send(fd, resp, strlen(resp), 0) < 0) {
+            if (send_all(fd, resp, strlen(resp)) < 0) {
                 /* El cliente pudo haberse desconectado justo al responder;
                  * se ignora SIGPIPE (ver main) y simplemente se cierra el hilo. */
                 close(fd);
@@ -403,6 +424,10 @@ static void *handle_tcp_client(void *arg) {
 
         if (buflen >= sizeof(buf) - 1) {
             /* mensaje demasiado largo sin salto de línea: se descarta */
+            char resp[MAX_MSG];
+            build_msg(resp, sizeof(resp), MSG_ERROR, "MENSAJE_DEMASIADO_LARGO");
+            (void)send_all(fd, resp, strlen(resp));
+            log_line(ip, port, "OUT", resp);
             buflen = 0;
         }
     }
@@ -452,7 +477,13 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    int port = atoi(argv[1]);
+    char *end;
+    long parsed_port = strtol(argv[1], &end, 10);
+    if (*argv[1] == '\0' || *end != '\0' || parsed_port < 1 || parsed_port > 65535) {
+        fprintf(stderr, "Puerto invalido: %s (debe estar entre 1 y 65535)\n", argv[1]);
+        return 1;
+    }
+    int port = (int)parsed_port;
     g_udp_port = port;
     g_logfile = fopen(argv[2], "a");
     if (!g_logfile) {
